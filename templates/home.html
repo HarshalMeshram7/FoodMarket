@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}
+Home - FoodMart
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
+</head>
+{% endblock %}
+
+{% block content %}
+<body>    
+  <section class="container mt-4">
+    <div class="swiper-slide">
+        <div class="row banner-content p-5">
+            <div class="content-wrapper col-md-7">
+                <div class="categories my-3">100% natural</div>
+                    <h3 class="display-4">Fresh Smoothie & Summer Juice</h3>
+                        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Dignissim massa diam elementum.</p>
+                        <a href="#"
+                          class="btn btn-outline-dark btn-lg text-uppercase fs-6 rounded-1 px-4 py-3 mt-3">Shop Now</a>
+            </div>
+                <div class="img-wrapper col-md-5">
+                    <img src="{{ url_for('static', filename='images/product-thumb-1.png') }}" class="img-fluid">
+                </div>
+
+        </div>
+    </div>
+  </section>
+
+  <section class="py-5 overflow-hidden">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-md-12">
+
+          <div class="section-header d-flex flex-wrap justify-content-between mb-5">
+            <h2 class="section-title">Category</h2>
+
+            <div class="d-flex align-items-center">
+              <a href="#" class="btn-link text-decoration-none">View All Categories →</a>
+              <div class="swiper-buttons">
+                <button class="swiper-prev category-carousel-prev btn btn-yellow">❮</button>
+                <button class="swiper-next category-carousel-next btn btn-yellow">❯</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+            
+          <div class="category-carousel swiper">
+            <div class="swiper-wrapper">
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}" alt="Category Thumbnail">
+                    <h3 class="category-title">Fruits & Veges</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-bread-baguette.png') }}" alt="Category Thumbnail">
+                <h3 class="category-title">Breads & Sweets</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-soft-drinks-bottle.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Drinks</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-wine-glass-bottle.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Wines</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-animal-products-drumsticks.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Meat</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-bread-herb-flour.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Flour & Baking</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Fruits & Veges</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Fruits & Veges</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Fruits & Veges</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Fruits & Veges</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Fruits & Veges</h3>
+              </a>
+              <a href="index.html" class="nav-link category-item swiper-slide">
+                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
+                  alt="Category Thumbnail">
+                <h3 class="category-title">Fruits & Veges</h3>
+              </a>
+
+            </div>
+          </div>
+           <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+        </div>
+      </div>
+    </div>
+  </section>
+ <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+</body> 
+{% endblock %}  
