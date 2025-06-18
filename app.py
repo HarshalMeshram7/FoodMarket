@@ -6,9 +6,9 @@ import pymysql.cursors
 app = Flask(__name__)
 
 db = pymysql.connect(
-    host='localhost',
-    user='root',
-    password='root',
+    host='65.2.83.131',
+    user='harshal',
+    password='Harshal@112',
     database='foodmart'
     )
 
