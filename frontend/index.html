@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>FoodMart</title>
+</head>
+<body>
+
+<div id="categories-container"></div>
+
+<script>
+  fetch('http://localhost:5000/api/categories')
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('categories-container');
+      data.forEach(item => {
+        container.innerHTML += `
+          <div class="category">
+            <img src="${item.image_url}" width="100">
+            <h3>${item.name}</h3>
+          </div>`;
+      });
+    });
+</script>
+
+</body>
+</html>

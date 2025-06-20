@@ -25,7 +25,5 @@ def home_page():
     return render_template('home.html', categories=categories)
 
 
-
-
 if __name__ == '__main__':
     app.run(debug=True)
