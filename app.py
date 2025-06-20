@@ -2,6 +2,7 @@ from flask import Flask
 from flask import render_template, url_for
 import pymysql
 import pymysql.cursors
+from urllib.parse import unquote
 
 app = Flask(__name__)
 
@@ -12,10 +13,14 @@ db = pymysql.connect(
     database='foodmart'
     )
 
+@app.template_filter('url_decode')
+def url_decode_filter(s):
+    return unquote(s)
+
 @app.route('/')
 def home_page():
     cursor = db.cursor(pymysql.cursors.DictCursor)
-    cursor.execute("SELECT name FROM main_categories")
+    cursor.execute("SELECT  name, image_url FROM main_categories")
     categories = cursor.fetchall()
     return render_template('home.html', categories=categories)
 

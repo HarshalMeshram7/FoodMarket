@@ -51,65 +51,12 @@ Home - FoodMart
             
           <div class="category-carousel swiper">
             <div class="swiper-wrapper">
+              {% for item in categories %}
               <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}" alt="Category Thumbnail">
-                    <h3 class="category-title">Fruits & Veges</h3>
+                <img src="{{ item.image_url }}" alt="Category Thumbnail" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Image+Not+Found'">
+                    <h3 class="category-title">{{ item.name }}</h3>
               </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-bread-baguette.png') }}" alt="Category Thumbnail">
-                <h3 class="category-title">Breads & Sweets</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-soft-drinks-bottle.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Drinks</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-wine-glass-bottle.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Wines</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-animal-products-drumsticks.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Meat</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-bread-herb-flour.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Flour & Baking</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Fruits & Veges</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Fruits & Veges</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Fruits & Veges</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Fruits & Veges</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Fruits & Veges</h3>
-              </a>
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ url_for('static', filename='images/icon-vegetables-broccoli.png') }}"
-                  alt="Category Thumbnail">
-                <h3 class="category-title">Fruits & Veges</h3>
-              </a>
-
+              {% endfor %}
             </div>
           </div>
            <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
