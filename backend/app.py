@@ -29,6 +29,20 @@ def get_catagories():
     data = cursor.fetchall()
     return jsonify(data)
 
+@app.route('/api/randomproducts', methods=['GET'])
+def get_random_products():
+    """
+    Get random categories
+    ---
+    responses:
+        200:
+            description: A list of random products
+    """
+    cursor = db.cursor()
+    cursor.execute("SELECT  main_category_id, name, description, image_url, display_order, is_active , created_at FROM main_categories ORDER BY RAND() LIMIT 10")
+    data = cursor.fetchall()
+    return jsonify(data)
+
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000) 
+    app.run(debug=True, port=5003) 
