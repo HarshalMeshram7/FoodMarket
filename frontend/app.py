@@ -19,11 +19,8 @@ def url_decode_filter(s):
 
 @app.route('/')
 def home_page():
-    cursor = db.cursor(pymysql.cursors.DictCursor)
-    cursor.execute("SELECT  name, image_url FROM main_categories")
-    categories = cursor.fetchall()
-    return render_template('home.html', categories=categories)
+    return render_template('home.html')
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)

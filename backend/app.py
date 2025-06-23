@@ -15,7 +15,7 @@ db = pymysql.connect(
     cursorclass=pymysql.cursors.DictCursor
     )
 
-@app.route('/api/catagories', methods=['GET'])
+@app.route('/api/categories', methods=['GET'])
 def get_catagories():
     """
     Get all main categories
@@ -25,10 +25,10 @@ def get_catagories():
         description: A list of categories
     """
     cursor = db.cursor()
-    cursor.execute("SELECT * FROM main_catagories")
+    cursor.execute("SELECT main_category_id, name, description, image_url, display_order, is_active , created_at FROM main_categories")
     data = cursor.fetchall()
     return jsonify(data)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000) 

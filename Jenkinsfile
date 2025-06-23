@@ -2,7 +2,8 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "harshalmeshram/foodmarket:${BUILD_ID}"
+        BACKEND_IMAGE = "harshalmeshram/foodmarket:backend${BUILD_ID}"
+        FRONTEND_IMAGE = "harshalmeshram/foodmarket:frontend${BUILD_ID}"
     }
 
     stages {
@@ -10,12 +11,14 @@ pipeline {
             steps {
                 git branch: 'main', credentialsId: 'github-creds', url: 'https://github.com/HarshalMeshram7/FoodMarket.git'
             }
-    }
+        }
 
-
-        stage('Build Docker Image') {
+        stage('Build Docker Images') {
             steps {
-                sh 'docker build -t $IMAGE_NAME .'
+                sh """
+                    docker build -t $BACKEND_IMAGE ./backend
+                    docker build -t $FRONTEND_IMAGE ./frontend
+                """
             }
         }
 
@@ -27,25 +30,25 @@ pipeline {
             }
         }
 
-        stage('Push to DockerHub') {
+        stage('Push Docker Images') {
             steps {
-                sh 'docker push $IMAGE_NAME'
+                sh """
+                    docker push $BACKEND_IMAGE
+                    docker push $FRONTEND_IMAGE
+                """
             }
         }
 
-        stage('Remove Local Image (simulate pull step)') {
+        stage('Deploy with Docker Compose') {
             steps {
-                sh 'docker rmi $IMAGE_NAME'
-            }
-        }
-
-        stage('Pull and Run Container') {
-            steps {
-                sh '''
-                    docker pull $IMAGE_NAME
-                    docker stop foodmarket || true && docker rm foodmarket || true
-                    docker run -d --name foodmarket -p 5002:5002 $IMAGE_NAME
-                '''
+                // Replace image placeholders dynamically in docker-compose file
+                sh """
+                    sed -i 's|BACKEND_IMAGE|$BACKEND_IMAGE|' docker-compose.yml
+                    sed -i 's|FRONTEND_IMAGE|$FRONTEND_IMAGE|' docker-compose.yml
+                    
+                    docker-compose down || true
+                    docker-compose up -d
+                """
             }
         }
     }

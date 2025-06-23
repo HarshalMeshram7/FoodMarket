@@ -32,13 +32,8 @@ Home - FoodMart
         <div class="col-md-12">
             
           <div class="category-carousel swiper">
-            <div class="swiper-wrapper">
-              {% for item in categories %}
-              <a href="index.html" class="nav-link category-item swiper-slide">
-                <img src="{{ item.image_url }}" alt="Category Thumbnail" onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Image+Not+Found'">
-                    <h3 class="category-title">{{ item.name }}</h3>
-              </a>
-              {% endfor %}
+            <div class="swiper-wrapper" id="category-wrapper">
+        
             </div>
           </div>
            <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
@@ -59,12 +54,10 @@ Home - FoodMart
               <h3>Trending Products</h3>
               <nav>
                 <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                  <a href="#" class="nav-link text-uppercase fs-6 active" id="nav-all-tab" data-bs-toggle="tab"
-                    data-bs-target="#nav-all">All</a>
-                  <a href="#" class="nav-link text-uppercase fs-6" id="nav-fruits-tab" data-bs-toggle="tab"
-                    data-bs-target="#nav-fruits">Fruits & Veges</a>
-                  <a href="#" class="nav-link text-uppercase fs-6" id="nav-juices-tab" data-bs-toggle="tab"
-                    data-bs-target="#nav-juices">Juices</a>
+                  
+                </div>
+                <div class="tab-content" id="nav-tabContent">
+  
                 </div>
               </nav>
             </div>
@@ -1015,4 +1008,51 @@ Home - FoodMart
 
  <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 </body> 
+<script>
+fetch('http://localhost:5003/api/categories')
+  .then(res => res.json())
+  .then(data => {
+    const wrapper = document.getElementById('category-wrapper');
+
+    data.forEach(item => {
+      const a = document.createElement('a');
+      a.href = "index.html";
+      a.className = "nav-link category-item swiper-slide";
+      a.innerHTML = `
+        <img src="${item.image_url}" alt="Category Thumbnail"
+             onerror="this.onerror=null; this.src='https://via.placeholder.com/150?text=Image+Not+Found'">
+        <h3 class="category-title">${item.name}</h3>
+      `;
+      wrapper.appendChild(a);
+    });
+  })
+  .catch(err => console.error('Error loading categories:', err));
+</script>
+
+<script>
+fetch('http://localhost:5003/api/categories')
+  .then(res => res.json())
+  .then(data => {
+    const wrapper = document.getElementById('nav-tab');
+
+    data.forEach((item, index)=> {
+      const tab = document.createElement('a');
+      tab.href = "index.html";
+      tab.className = "nav-link text-uppercase fs-6";
+      tab.textContent = item.name
+      tab.href = "#"
+      tab.id = `nav-${item.name.toLowerCase()}-tab`;
+      tab.setAttribute('data-bs-toggle', 'tab');
+      tab.setAttribute('data-bs-target', `#nav-${item.name.toLowerCase()}`);
+
+      if (index == 0) {
+        tab.classList.add('active');
+      }
+
+      wrapper.appendChild(tab);
+    });
+  })
+  .catch(err => console.error('Error loading categories:', err));
+</script>
+
 {% endblock %}  
