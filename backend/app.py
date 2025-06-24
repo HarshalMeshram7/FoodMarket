@@ -15,6 +15,8 @@ db = pymysql.connect(
     cursorclass=pymysql.cursors.DictCursor
     )
 
+CORS(app, origins=["http://127.0.0.1:5001"])
+
 @app.route('/api/categories', methods=['GET'])
 def get_catagories():
     """
@@ -39,7 +41,7 @@ def get_random_products():
             description: A list of random products
     """
     cursor = db.cursor()
-    cursor.execute("SELECT  main_category_id, name, description, image_url, display_order, is_active , created_at FROM main_categories ORDER BY RAND() LIMIT 10")
+    cursor.execute("SELECT product_id, main_category_id, name, description, price, cost_price, image_url, quantity_in_stock, rating FROM products ORDER BY RAND() LIMIT 10")
     data = cursor.fetchall()
     return jsonify(data)
 

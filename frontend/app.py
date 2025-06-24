@@ -6,6 +6,7 @@ from urllib.parse import unquote
 
 app = Flask(__name__)
 
+
 db = pymysql.connect(
     host='65.2.83.131',
     user='harshal',
