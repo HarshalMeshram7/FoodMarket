@@ -99,6 +99,4 @@ stages:
           docker-compose down || true
           docker-compose up -d
           
-          # Cleanup
-          docker image prune -af
         readyTimeout: '20000'
