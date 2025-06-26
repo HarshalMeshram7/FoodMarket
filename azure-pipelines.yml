@@ -16,7 +16,8 @@ variables:
   frontendContainerName: 'foodmarket-frontend'
   backendContainerName: 'foodmarket-backend'
   frontendPort: '5001:5001' 
-  backendPort: '5003:5003' 
+  backendPort: '5003:5003'
+  networkName: "foodmarket-network"
 
 stages:
 - stage: Build
@@ -58,6 +59,11 @@ stages:
         sshEndpoint: 'main-server-ssh'
         runOptions: 'inline'
         inline: |
+
+            # Create a custom Docker network if it doesn't exist
+            echo "Creating Docker network if it doesn't exist..."
+            docker network create $(networkName) || true
+
             # Backend deployment
             echo "Stopping and removing existing backend container..."
             docker stop $(backendContainerName) || true
@@ -69,6 +75,7 @@ stages:
             echo "Starting new backend container..."
             docker run -d \
               --name $(backendContainerName) \
+              --network $(networkName) \
               -p $(backendPort) \
               --restart unless-stopped \
               $(repository):$(btag)
@@ -84,12 +91,12 @@ stages:
             echo "Starting new frontend container..."
             docker run -d \
               --name $(frontendContainerName) \
+              --network $(networkName) \
               -p $(frontendPort) \
               --restart unless-stopped \
               $(repository):$(ftag)
 
             
-
             echo "Cleaning up old images..."
             docker image prune -af
             
