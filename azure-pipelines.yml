@@ -13,6 +13,10 @@ variables:
   btag: 'backend$(Build.BuildId)'
   repository: 'harshalmeshram/foodmarket'
   deployPath: '/home/ubuntu/foodmart-deploy'
+  frontendContainerName: 'foodmarket-frontend'
+  backendContainerName: 'foodmarket-backend'
+  frontendPort: '5001:5001' 
+  backendPort: '5003:5003' 
 
 stages:
 - stage: Build
@@ -54,88 +58,41 @@ stages:
         sshEndpoint: 'main-server-ssh'
         runOptions: 'inline'
         inline: |
-          # Set error handling and logging
-          set -e
-          DEPLOY_LOG="$(pwd)/deploy_$(date +%Y%m%d_%H%M%S).log"
-          
-          {
-            echo "=== Starting Deployment $(date) ==="
+            # Backend deployment
+            echo "Stopping and removing existing backend container..."
+            docker stop $(backendContainerName) || true
+            docker rm $(backendContainerName) || true
             
-            # Create deployment directory
-            echo "Creating deployment directory..."
-            mkdir -p $(deployPath)
-            cd $(deployPath)
+            echo "Pulling latest backend image..."
+            docker pull $(repository):$(btag)
             
-            # Generate dynamic docker-compose.yml
-            echo "Generating docker-compose.yml..."
-            cat > docker-compose.yml <<'EOL'
-          version: '3.8'
-          services:
-            backend:
-              image: $(repository):$(btag)
-              container_name: foodmart-backend
-              ports:
-                - "5003:5003"
-              networks:
-                - foodmart-net
-              restart: unless-stopped
-              healthcheck:
-                test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
-                interval: 30s
-                timeout: 10s
-                retries: 3
+            echo "Starting new backend container..."
+            docker run -d \
+              --name $(backendContainerName) \
+              -p $(backendPort) \
+              --restart unless-stopped \
+              $(repository):$(btag)
 
-            frontend:
-              image: $(repository):$(ftag)
-              container_name: foodmart-frontend
-              ports:
-                - "5002:5002"
-              networks:
-                - foodmart-net
-              depends_on:
-                backend:
-                  condition: service_healthy
-              restart: unless-stopped
-          networks:
-            foodmart-net:
-              driver: bridge
-          EOL
+            # Frontend deployment
+            echo "Stopping and removing existing frontend container..."
+            docker stop $(frontendContainerName) || true
+            docker rm $(frontendContainerName) || true
+            
+            echo "Pulling latest frontend image..."
+            docker pull $(repository):$(ftag)
+            
+            echo "Starting new frontend container..."
+            docker run -d \
+              --name $(frontendContainerName) \
+              -p $(frontendPort) \
+              --restart unless-stopped \
+              $(repository):$(ftag)
 
-            # Cleanup previous deployment
-            echo "Cleaning up previous deployment..."
-            docker-compose down --rmi local --volumes --remove-orphans || true
             
-            # Pull new images (quiet mode to avoid Azure false errors)
-            echo "Pulling new container images..."
-            docker-compose pull --quiet
+
+            echo "Cleaning up old images..."
+            docker image prune -af
             
-            # Start new deployment
-            echo "Starting containers..."
-            docker-compose up -d --force-recreate
-            
-            # Verify deployment
-            echo "Verifying deployment..."
-            sleep 10  # Allow containers to initialize
-            
-            BACKEND_STATUS=$(docker inspect -f '{{.State.Status}}' foodmart-backend 2>/dev/null || echo "missing")
-            FRONTEND_STATUS=$(docker inspect -f '{{.State.Status}}' foodmart-frontend 2>/dev/null || echo "missing")
-            
-            if [ "$BACKEND_STATUS" != "running" ] || [ "$FRONTEND_STATUS" != "running" ]; then
-              echo "##[error]Deployment failed - containers not running"
-              echo "Backend Status: $BACKEND_STATUS"
-              echo "Frontend Status: $FRONTEND_STATUS"
-              docker-compose logs || true
-              exit 1
-            fi
-            
-            echo "##[section]Deployment successful!"
-            echo "Backend: $BACKEND_STATUS"
-            echo "Frontend: $FRONTEND_STATUS"
-            
-          } > "$DEPLOY_LOG" 2>&1 || {
-            echo "##[error]Deployment failed - check $DEPLOY_LOG on server"
-            exit 1
-          }
-              # Show last 20 lines of log in pipeline
-          tail -n 20 "$DEPLOY_LOG"
+            echo "Current running containers:"
+            docker ps
         readyTimeout: '20000'
