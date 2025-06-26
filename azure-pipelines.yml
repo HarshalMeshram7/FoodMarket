@@ -68,38 +68,38 @@ stages:
             
             # Generate dynamic docker-compose.yml
             echo "Generating docker-compose.yml..."
-            cat > docker-compose.yml <<EOL
-              version: '3.8'
-              services:
-                backend:
-                  image: $(repository):$(btag)
-                  container_name: foodmart-backend
-                  ports:
-                    - "5003:5003"
-                  networks:
-                    - foodmart-net
-                  restart: unless-stopped
-                  healthcheck:
-                    test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
-                    interval: 30s
-                    timeout: 10s
-                    retries: 3
-
-                frontend:
-                  image: $(repository):$(ftag)
-                  container_name: foodmart-frontend
-                  ports:
-                    - "5002:5002"
-                  networks:
-                    - foodmart-net
-                  depends_on:
-                    backend:
-                      condition: service_healthy
-                  restart: unless-stopped
+            cat > docker-compose.yml <<'EOL'
+          version: '3.8'
+          services:
+            backend:
+              image: $(repository):$(btag)
+              container_name: foodmart-backend
+              ports:
+                - "5003:5003"
               networks:
-                foodmart-net:
-                  driver: bridge
-            EOL
+                - foodmart-net
+              restart: unless-stopped
+              healthcheck:
+                test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+
+            frontend:
+              image: $(repository):$(ftag)
+              container_name: foodmart-frontend
+              ports:
+                - "5002:5002"
+              networks:
+                - foodmart-net
+              depends_on:
+                backend:
+                  condition: service_healthy
+              restart: unless-stopped
+          networks:
+            foodmart-net:
+              driver: bridge
+          EOL
 
             # Cleanup previous deployment
             echo "Cleaning up previous deployment..."
@@ -117,26 +117,25 @@ stages:
             echo "Verifying deployment..."
             sleep 10  # Allow containers to initialize
             
-            BACKEND_STATUS=$(docker inspect -f '{{.State.Status}}' foodmart-backend)
-            FRONTEND_STATUS=$(docker inspect -f '{{.State.Status}}' foodmart-frontend)
+            BACKEND_STATUS=$(docker inspect -f '{{.State.Status}}' foodmart-backend 2>/dev/null || echo "missing")
+            FRONTEND_STATUS=$(docker inspect -f '{{.State.Status}}' foodmart-frontend 2>/dev/null || echo "missing")
             
             if [ "$BACKEND_STATUS" != "running" ] || [ "$FRONTEND_STATUS" != "running" ]; then
               echo "##[error]Deployment failed - containers not running"
               echo "Backend Status: $BACKEND_STATUS"
               echo "Frontend Status: $FRONTEND_STATUS"
-              docker-compose logs
+              docker-compose logs || true
               exit 1
             fi
             
             echo "##[section]Deployment successful!"
-            echo "Backend: $(docker inspect -f '{{.State.Status}}' foodmart-backend)"
-            echo "Frontend: $(docker inspect -f '{{.State.Status}}' foodmart-frontend)"
+            echo "Backend: $BACKEND_STATUS"
+            echo "Frontend: $FRONTEND_STATUS"
             
           } > "$DEPLOY_LOG" 2>&1 || {
             echo "##[error]Deployment failed - check $DEPLOY_LOG on server"
             exit 1
           }
-          
-          # Show last 20 lines of log in pipeline
+              # Show last 20 lines of log in pipeline
           tail -n 20 "$DEPLOY_LOG"
         readyTimeout: '20000'
