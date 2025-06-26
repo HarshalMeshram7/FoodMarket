@@ -85,6 +85,13 @@ stages:
                 driver: bridge
           EOL
 
+          # Forcefully remove any existing containers if they exist
+          docker rm -f foodmart-backend || true
+          docker rm -f foodmart-frontend || true
+          
+          # Remove any orphan containers (in case of previous failed deployments)
+          docker-compose down --remove-orphans || true
+
           # Pull specific versions (not 'latest')
           docker-compose pull
           
