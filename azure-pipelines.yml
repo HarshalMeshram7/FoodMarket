@@ -1,0 +1,97 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  ftag: 'frontend$(Build.BuildId)'
+  btag: 'backend$(Build.BuildId)'
+  repository: 'harshalmeshram/foodmarket'
+  deployPath: '/home/ubuntu/foodmart-deploy'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'Harshal''s DockerHub'
+        repository: '$(repository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/frontend/Dockerfile'
+        tags: '$(ftag)'
+
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'Harshal''s DockerHub'
+        repository: '$(repository)'
+        command: 'buildAndPush'
+        Dockerfile: '$(Build.SourcesDirectory)/backend/Dockerfile'
+        tags: '$(btag)'
+
+- stage: Deploy
+  displayName: Deploy Containers
+  jobs:
+  - job: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: SSH@0
+      inputs:
+        sshEndpoint: 'main-server-ssh'
+        runOptions: 'inline'
+        inline: |
+          # Create deployment directory
+          mkdir -p $(deployPath)
+          cd $(deployPath)
+                    
+          # Generate docker-compose.yml with current build tags
+          cat > docker-compose.yml <<EOL
+            version: '3.8'
+            services:
+              backend:
+                image: $(repository):$(btag)
+                container_name: foodmart-backend
+                ports:
+                  - "5003:5003"
+                networks:
+                  - foodmart-net
+                restart: unless-stopped
+
+              frontend:
+                image: $(repository):$(ftag) 
+                container_name: foodmart-frontend
+                ports:
+                  - "5002:5002"
+                networks:
+                  - foodmart-net
+                depends_on:
+                  - backend
+                restart: unless-stopped
+            networks:
+              foodmart-net:
+                driver: bridge
+          EOL
+
+          # Pull specific versions (not 'latest')
+          docker-compose pull
+          
+          # Stop and recreate containers
+          docker-compose down || true
+          docker-compose up -d
+          
+          # Cleanup
+          docker image prune -af
+        readyTimeout: '20000'
