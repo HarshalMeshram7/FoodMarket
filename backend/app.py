@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flasgger import Swagger
 
 app = Flask(__name__)
-CORS(app, origins=["http://127.0.0.1:5001"])
+CORS(app, origins=["http://localhost:5001"])
 swagger = Swagger(app)
 
 def get_db_connection():
