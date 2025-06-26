@@ -49,16 +49,26 @@ stages:
       vmImage: ubuntu-latest
     steps:
     - task: SSH@0
+      displayName: 'Deploy Application'
       inputs:
         sshEndpoint: 'main-server-ssh'
         runOptions: 'inline'
         inline: |
-          # Create deployment directory
-          mkdir -p $(deployPath)
-          cd $(deployPath)
-                    
-          # Generate docker-compose.yml with current build tags
-          cat > docker-compose.yml <<EOL
+          # Set error handling and logging
+          set -e
+          DEPLOY_LOG="$(pwd)/deploy_$(date +%Y%m%d_%H%M%S).log"
+          
+          {
+            echo "=== Starting Deployment $(date) ==="
+            
+            # Create deployment directory
+            echo "Creating deployment directory..."
+            mkdir -p $(deployPath)
+            cd $(deployPath)
+            
+            # Generate dynamic docker-compose.yml
+            echo "Generating docker-compose.yml..."
+            cat > docker-compose.yml <<EOL
             version: '3.8'
             services:
               backend:
@@ -69,34 +79,64 @@ stages:
                 networks:
                   - foodmart-net
                 restart: unless-stopped
+                healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:5003/health"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
 
               frontend:
-                image: $(repository):$(ftag) 
+                image: $(repository):$(ftag)
                 container_name: foodmart-frontend
                 ports:
                   - "5002:5002"
                 networks:
                   - foodmart-net
                 depends_on:
-                  - backend
+                  backend:
+                    condition: service_healthy
                 restart: unless-stopped
             networks:
               foodmart-net:
                 driver: bridge
-          EOL
+            EOL
 
-          # Forcefully remove any existing containers if they exist
-          docker rm -f foodmart-backend || true
-          docker rm -f foodmart-frontend || true
+            # Cleanup previous deployment
+            echo "Cleaning up previous deployment..."
+            docker-compose down --rmi local --volumes --remove-orphans || true
+            
+            # Pull new images (quiet mode to avoid Azure false errors)
+            echo "Pulling new container images..."
+            docker-compose pull --quiet
+            
+            # Start new deployment
+            echo "Starting containers..."
+            docker-compose up -d --force-recreate
+            
+            # Verify deployment
+            echo "Verifying deployment..."
+            sleep 10  # Allow containers to initialize
+            
+            BACKEND_STATUS=$(docker inspect -f '{{.State.Status}}' foodmart-backend)
+            FRONTEND_STATUS=$(docker inspect -f '{{.State.Status}}' foodmart-frontend)
+            
+            if [ "$BACKEND_STATUS" != "running" ] || [ "$FRONTEND_STATUS" != "running" ]; then
+              echo "##[error]Deployment failed - containers not running"
+              echo "Backend Status: $BACKEND_STATUS"
+              echo "Frontend Status: $FRONTEND_STATUS"
+              docker-compose logs
+              exit 1
+            fi
+            
+            echo "##[section]Deployment successful!"
+            echo "Backend: $(docker inspect -f '{{.State.Status}}' foodmart-backend)"
+            echo "Frontend: $(docker inspect -f '{{.State.Status}}' foodmart-frontend)"
+            
+          } > "$DEPLOY_LOG" 2>&1 || {
+            echo "##[error]Deployment failed - check $DEPLOY_LOG on server"
+            exit 1
+          }
           
-          # Remove any orphan containers (in case of previous failed deployments)
-          docker-compose down --remove-orphans || true
-
-          # Pull specific versions (not 'latest')
-          docker-compose pull
-          
-          # Stop and recreate containers
-          docker-compose down || true
-          docker-compose up -d
-          
+          # Show last 20 lines of log in pipeline
+          tail -n 20 "$DEPLOY_LOG"
         readyTimeout: '20000'
