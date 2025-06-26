@@ -60,6 +60,10 @@ stages:
         runOptions: 'inline'
         inline: |
 
+           # Remove existing network
+            echo "Removing existing network..."
+            docker network rm $(networkName) || true
+            
             # Create a custom Docker network if it doesn't exist
             echo "Creating Docker network if it doesn't exist..."
             docker network create $(networkName) || true
