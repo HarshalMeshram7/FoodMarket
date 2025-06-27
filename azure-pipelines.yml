@@ -60,10 +60,6 @@ stages:
         runOptions: 'inline'
         inline: |
 
-            # Create a custom Docker network if it doesn't exist
-            echo "Creating Docker network if it doesn't exist..."
-            docker network create $(networkName) || true
-
             # Backend deployment
             echo "Stopping and removing existing backend container..."
             docker stop $(backendContainerName) || true
