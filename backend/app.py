@@ -2,17 +2,29 @@ from flask import Flask, jsonify
 import pymysql
 from flask_cors import CORS
 from flasgger import Swagger
+from dotenv import load_dotenv
+import os   
+
+load_dotenv()
+
+backend_url = os.getenv('BACKEND_URL')
+frontend_url = os.getenv('FRONTEND_URL')
+DB_HOST = os.getenv('DB_HOST')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_NAME = os.getenv('DB_NAME')
 
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5001"])
+CORS(app, origins=[frontend_url], supports_credentials=True)
 swagger = Swagger(app)
 
 def get_db_connection():
     return pymysql.connect(
-        host='65.2.83.131',
-        user='harshal',
-        password='Harshal@112',
-        database='foodmart',
+        host=DB_HOST,
+        port=3306,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME,
         cursorclass=pymysql.cursors.DictCursor
     )
 

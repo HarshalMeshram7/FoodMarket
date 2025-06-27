@@ -3,16 +3,14 @@ from flask import render_template, url_for
 import pymysql
 import pymysql.cursors
 from urllib.parse import unquote
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
 
 app = Flask(__name__)
 
-
-db = pymysql.connect(
-    host='65.2.83.131',
-    user='harshal',
-    password='Harshal@112',
-    database='foodmart'
-    )
 
 @app.template_filter('url_decode')
 def url_decode_filter(s):

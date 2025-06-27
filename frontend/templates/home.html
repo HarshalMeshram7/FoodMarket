@@ -71,7 +71,7 @@ Home - FoodMart
 
 </body> 
 <script>
-fetch('http://localhost:5003/api/categories')
+fetch('https://foodapi.harshaldevops.cloud/api/categories')
   .then(res => res.json())
   .then(data => {
     const wrapper = document.getElementById('category-wrapper');
@@ -92,7 +92,7 @@ fetch('http://localhost:5003/api/categories')
 </script> 
 
 <script>
-fetch('http://localhost:5003/api/categories')
+fetch('https://foodapi.harshaldevops.cloud/api/categories')
   .then(res => res.json())
   .then(data => {
     const wrapper = document.getElementById('nav-tab');
@@ -118,7 +118,7 @@ fetch('http://localhost:5003/api/categories')
 </script>
 
 <script>
-fetch('http://localhost:5003/api/randomproducts')
+fetch('https://foodapi.harshaldevops.cloud/api/randomproducts')
   .then(res => res.json())
   .then(data => {
     const grid = document.querySelector('.product-grid');
@@ -193,7 +193,7 @@ function renderProducts(products) {
 }
 
 // Step 1: Load categories
-fetch('http://localhost:5003/api/categories')
+fetch('https://foodapi.harshaldevops.cloud/api/categories')
   .then(res => res.json())
   .then(categories => {
     // Create "All" tab
@@ -203,7 +203,7 @@ fetch('http://localhost:5003/api/categories')
     allTab.href = "#";
     allTab.textContent = 'All';
     allTab.onclick = () => {
-      fetch('http://localhost:5003/api/randomproducts')
+      fetch('https://foodapi.harshaldevops.cloud/api/randomproducts')
         .then(res => res.json())
         .then(data => {
           tabContent.innerHTML = '';
@@ -223,7 +223,7 @@ fetch('http://localhost:5003/api/categories')
       catTab.href = "#";
       catTab.textContent = category.name;
       catTab.onclick = () => {
-        fetch(`http://localhost:5003/api/products/by-category/${category.main_category_id}`)
+        fetch(`https://foodapi.harshaldevops.cloud/api/products/by-category/${category.main_category_id}`)
           .then(res => res.json())
           .then(data => {
             tabContent.innerHTML = '';
@@ -235,8 +235,6 @@ fetch('http://localhost:5003/api/categories')
   })
   .catch(err => console.error('Error loading categories:', err));
 </script>
-
-
 
 
 {% endblock %}  
