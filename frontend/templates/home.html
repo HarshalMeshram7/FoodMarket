@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Home - FoodMart
+FoodMart
 <head>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
 </head>
@@ -71,7 +71,7 @@ Home - FoodMart
 
 </body> 
 <script>
-fetch('https://foodapi.harshaldevops.cloud/api/categories')
+fetch('http://localhost:5003/api/categories')
   .then(res => res.json())
   .then(data => {
     const wrapper = document.getElementById('category-wrapper');
@@ -92,7 +92,7 @@ fetch('https://foodapi.harshaldevops.cloud/api/categories')
 </script> 
 
 <script>
-fetch('https://foodapi.harshaldevops.cloud/api/categories')
+fetch('http://localhost:5003/api/categories')
   .then(res => res.json())
   .then(data => {
     const wrapper = document.getElementById('nav-tab');
@@ -118,7 +118,7 @@ fetch('https://foodapi.harshaldevops.cloud/api/categories')
 </script>
 
 <script>
-fetch('https://foodapi.harshaldevops.cloud/api/randomproducts')
+fetch('http://localhost:5003/api/randomproducts')
   .then(res => res.json())
   .then(data => {
     const grid = document.querySelector('.product-grid');
@@ -134,7 +134,7 @@ fetch('https://foodapi.harshaldevops.cloud/api/randomproducts')
             <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
           </a>
           <figure class="mb-2">
-            <a href="index.html" title="${product.name}">
+            <a href="/product" title="${product.name}">
               <img src="${product.image_url}" class="tab-image img-fluid"
                 onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'">
             </a>
@@ -193,7 +193,7 @@ function renderProducts(products) {
 }
 
 // Step 1: Load categories
-fetch('https://foodapi.harshaldevops.cloud/api/categories')
+fetch('http://localhost:5003/api/categories')
   .then(res => res.json())
   .then(categories => {
     // Create "All" tab
@@ -203,7 +203,7 @@ fetch('https://foodapi.harshaldevops.cloud/api/categories')
     allTab.href = "#";
     allTab.textContent = 'All';
     allTab.onclick = () => {
-      fetch('https://foodapi.harshaldevops.cloud/api/randomproducts')
+      fetch('http://localhost:5003/api/randomproducts')
         .then(res => res.json())
         .then(data => {
           tabContent.innerHTML = '';
@@ -223,7 +223,7 @@ fetch('https://foodapi.harshaldevops.cloud/api/categories')
       catTab.href = "#";
       catTab.textContent = category.name;
       catTab.onclick = () => {
-        fetch(`https://foodapi.harshaldevops.cloud/api/products/by-category/${category.main_category_id}`)
+        fetch(`http://localhost:5003/api/products/by-category/${category.main_category_id}`)
           .then(res => res.json())
           .then(data => {
             tabContent.innerHTML = '';

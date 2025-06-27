@@ -96,7 +96,10 @@ def get_products_by_category(category_id):
                    image_url, quantity_in_stock, rating
             FROM products
             WHERE main_category_id = %s
-            ORDER BY RAND()
+
+
+
+            
         """
         cursor.execute(query, (category_id,))
         data = cursor.fetchall()

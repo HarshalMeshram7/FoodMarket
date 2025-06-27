@@ -19,7 +19,10 @@ def url_decode_filter(s):
 @app.route('/')
 def home_page():
     return render_template('home.html')
-
+    
+@app.route('/product')
+def product_details():    
+    return render_template('productdetails.html')
 
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0', port=5001)
