@@ -24,5 +24,9 @@ def home_page():
 def product_details():    
     return render_template('productdetails.html')
 
+@app.route('/myaccount')
+def my_account():
+    return render_template('myaccount.html')
+
 if __name__ == '__main__':
     app.run(debug=True,host='0.0.0.0', port=5001)

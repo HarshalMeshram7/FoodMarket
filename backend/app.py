@@ -111,6 +111,27 @@ def get_products_by_category(category_id):
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/api/getuser', methods=['GET'])
+def get_user():
+    """
+    Get user information
+    ---
+    responses:
+      200:
+        description: User information
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id, username, email, first_name, last_name, phone FROM users")
+        data = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify(data)
+    except Exception as e:
+        print("❌ DB Error (users):", e)
+        return jsonify({'error': str(e)}), 500
+    
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5003)
