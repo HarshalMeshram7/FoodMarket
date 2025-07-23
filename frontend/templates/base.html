@@ -133,8 +133,18 @@
             <h5 class="mb-0">+980-34984089</h5>
           </div>
           <ul class="d-flex list-unstyled m-0">
-            <li>
-              <a href="#" class="rounded-circle bg-light p-2 mx-1"><svg width="24" height="24"><use xlink:href="#user"></use></svg></a>
+            <li class="dropdown">
+              <a href="#" class="rounded-circle bg-light p-2 mx-1 dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <svg width="24" height="24"><use xlink:href="#user"></use></svg>
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                <li><a class="dropdown-item text-dark" href="#">My Account</a></li>
+                <li><a class="dropdown-item text-dark" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">My Cart</a></li>
+                <li><a class="dropdown-item text-dark" href="#">My Orders</a></li>
+                <li><a class="dropdown-item text-dark" href="#">Contact Us</a></li>
+                <li><hr class="dropdown-divider text-dark"></li>
+                <li><a class="dropdown-item text-dark" href="#">Logout</a></li>
+              </ul>
             </li>
             <li>
               <a href="#" class="rounded-circle bg-light p-2 mx-1"><svg width="24" height="24"><use xlink:href="#heart"></use></svg></a>

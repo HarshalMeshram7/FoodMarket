@@ -9,7 +9,7 @@
   <div id="category-container"></div>
 
   <script>
-    fetch('http://127.0.0.1:5000/api/categories')
+    fetch('http://localhost:5003/api/categories')
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('category-container');
