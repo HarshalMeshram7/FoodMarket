@@ -92,6 +92,29 @@
   </svg>
   <!-- Header -->
   <header>
+
+    <!-- In your header section -->
+    <ul class="d-flex list-unstyled m-0">
+        {% if current_user.is_authenticated %}
+        <li class="dropdown">
+            <a href="#" class="rounded-circle bg-light p-2 mx-1 dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                <svg width="24" height="24"><use xlink:href="#user"></use></svg>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('my_account') }}">My Account</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+            </ul>
+        </li>
+        {% else %}
+        <li>
+            <a href="{{ url_for('login_page') }}" class="rounded-circle bg-light p-2 mx-1">
+                <svg width="24" height="24"><use xlink:href="#user"></use></svg>
+            </a>
+        </li>
+        {% endif %}
+        <!-- Rest of your icons -->
+    </ul>
+
     <div class="container-fluid">
       <div class="row py-3 border-bottom">
         <div class="col-sm-4 col-lg-3 text-center text-sm-start">

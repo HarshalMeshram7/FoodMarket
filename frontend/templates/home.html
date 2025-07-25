@@ -52,6 +52,7 @@ FoodMart
           <div class="bootstrap-tabs product-tabs">
             <div class="tabs-header d-flex justify-content-between border-bottom my-5">
               <h3>Trending Products</h3>
+              <div class="nav-tabs" id="nav-tab"></div>
             </div>
             <div class="tab-content" id="nav-tabContent">
               <div class="tab-pane fade show active" id="nav-all" role="tabpanel" aria-labelledby="nav-all-tab">
@@ -66,19 +67,20 @@ FoodMart
     </div>
   </section>
 
-
  <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
 
 </body> 
+
 <script>
-fetch('http://localhost:5003/api/categories')
+// Load categories for carousel
+fetch('/api/categories')
   .then(res => res.json())
   .then(data => {
     const wrapper = document.getElementById('category-wrapper');
 
     data.forEach(item => {
       const a = document.createElement('a');
-      a.href = "index.html";
+      a.href = "#";
       a.className = "nav-link category-item swiper-slide";
       a.innerHTML = `
         <img src="${item.image_url}" alt="Category Thumbnail"
@@ -87,38 +89,23 @@ fetch('http://localhost:5003/api/categories')
       `;
       wrapper.appendChild(a);
     });
+    
+    // Initialize Swiper after categories are loaded
+    const categorySwiper = new Swiper('.category-carousel', {
+      slidesPerView: 'auto',
+      spaceBetween: 20,
+      navigation: {
+        nextEl: '.category-carousel-next',
+        prevEl: '.category-carousel-prev',
+      },
+    });
   })
   .catch(err => console.error('Error loading categories:', err));
 </script> 
 
 <script>
-fetch('http://localhost:5003/api/categories')
-  .then(res => res.json())
-  .then(data => {
-    const wrapper = document.getElementById('nav-tab');
-
-    data.forEach((item, index)=> {
-      const tab = document.createElement('a');
-      tab.href = "index.html";
-      tab.className = "nav-link text-uppercase fs-6";
-      tab.textContent = item.name
-      tab.href = "#"
-      tab.id = `nav-${item.name.toLowerCase()}-tab`;
-      tab.setAttribute('data-bs-toggle', 'tab');
-      tab.setAttribute('data-bs-target', `#nav-${item.name.toLowerCase()}`);
-
-      if (index == 0) {
-        tab.classList.add('active');
-      }
-
-      wrapper.appendChild(tab);
-    });
-  })
-  .catch(err => console.error('Error loading categories:', err));
-</script>
-
-<script>
-fetch('http://localhost:5003/api/randomproducts')
+// Load initial random products
+fetch('/api/randomproducts')
   .then(res => res.json())
   .then(data => {
     const grid = document.querySelector('.product-grid');
@@ -154,7 +141,6 @@ fetch('http://localhost:5003/api/randomproducts')
   .catch(err => console.error('Error loading random products:', err));
 </script>
 
-
 <script>
 const tabContainer = document.getElementById('nav-tab');
 const tabContent = document.getElementById('nav-tabContent');
@@ -173,7 +159,7 @@ function renderProducts(products) {
           <svg width="24" height="24"><use xlink:href="#heart"></use></svg>
         </a>
         <figure class="mb-2">
-          <a href="index.html" title="${product.name}">
+          <a href="/product" title="${product.name}">
             <img src="${product.image_url}" class="tab-image img-fluid"
               onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'">
           </a>
@@ -192,8 +178,8 @@ function renderProducts(products) {
   return grid;
 }
 
-// Step 1: Load categories
-fetch('http://localhost:5003/api/categories')
+// Step 1: Load categories for tabs
+fetch('/api/categories')
   .then(res => res.json())
   .then(categories => {
     // Create "All" tab
@@ -203,7 +189,11 @@ fetch('http://localhost:5003/api/categories')
     allTab.href = "#";
     allTab.textContent = 'All';
     allTab.onclick = () => {
-      fetch('http://localhost:5003/api/randomproducts')
+      // Remove active class from all tabs
+      tabContainer.querySelectorAll('.nav-link').forEach(tab => tab.classList.remove('active'));
+      allTab.classList.add('active');
+      
+      fetch('/api/randomproducts')
         .then(res => res.json())
         .then(data => {
           tabContent.innerHTML = '';
@@ -223,7 +213,11 @@ fetch('http://localhost:5003/api/categories')
       catTab.href = "#";
       catTab.textContent = category.name;
       catTab.onclick = () => {
-        fetch(`http://localhost:5003/api/products/by-category/${category.main_category_id}`)
+        // Remove active class from all tabs
+        tabContainer.querySelectorAll('.nav-link').forEach(tab => tab.classList.remove('active'));
+        catTab.classList.add('active');
+        
+        fetch(`/api/products/by-category/${category.main_category_id}`)
           .then(res => res.json())
           .then(data => {
             tabContent.innerHTML = '';
@@ -236,5 +230,4 @@ fetch('http://localhost:5003/api/categories')
   .catch(err => console.error('Error loading categories:', err));
 </script>
 
-
-{% endblock %}  
+{% endblock %}
