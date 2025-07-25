@@ -108,6 +108,8 @@ My Account
     </div>
 </div>
 
+
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
@@ -170,13 +172,85 @@ document.addEventListener('DOMContentLoaded', function() {
     editBtn.addEventListener('click', () => toggleEditMode(true));
     cancelBtn.addEventListener('click', () => toggleEditMode(false));
     
-    accountForm.addEventListener('submit', function(e) {
+    // Replace the form submit handler with this:
+    accountForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Here you would add the update API call
-        alert('Update functionality will be implemented next');
-        // toggleEditMode(false); // Switch back to view mode after save
+        // Show loading state
+        const submitBtn = accountForm.querySelector('button[type="submit"]');
+        const originalBtnText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+        
+        try {
+            const formData = {
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value
+            };
+            
+            const response = await fetch('/api/update-user-details', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Add if using tokens:
+                    // 'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Update failed');
+            }
+            
+            const updatedUser = await response.json();
+            
+            // Update the view with new data
+            userData = updatedUser;
+            document.getElementById('firstNameView').textContent = updatedUser.first_name;
+            document.getElementById('lastNameView').textContent = updatedUser.last_name;
+            document.getElementById('phoneView').textContent = updatedUser.phone || 'Not provided';
+            document.getElementById('addressView').textContent = updatedUser.address || 'Not provided';
+            
+            // Show success message
+            showAlert('Profile updated successfully!', 'success');
+            
+            // Switch back to view mode
+            toggleEditMode(false);
+            
+        } catch (error) {
+            console.error('Update error:', error);
+            showAlert(error.message || 'Failed to update profile', 'danger');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+        }
     });
+
+// Helper function to show alerts
+function showAlert(message, type) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Add alert to card header
+    const cardHeader = document.querySelector('.card-header');
+    const existingAlert = cardHeader.querySelector('.alert');
+    if (existingAlert) existingAlert.remove();
+    
+    cardHeader.appendChild(alertDiv);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => alertDiv.remove(), 150);
+    }, 5000);
+}
 });
 </script>
 

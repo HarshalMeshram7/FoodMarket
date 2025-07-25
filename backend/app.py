@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 import pymysql
 from flask_cors import CORS
 from flasgger import Swagger
@@ -139,6 +140,52 @@ def get_user():
         return jsonify({'error': str(e)}), 500
     
 
+@app.route('/api/update-user-details', methods=['PUT'])
+@login_required  # Requires user to be logged in
+def update_user_details():
+    try:
+        # Get data from request
+        data = request.get_json()
+        user_id = current_user.id  # Or from session
+        
+        # Validate required fields
+        if not data.get('first_name') or not data.get('last_name'):
+            return jsonify({'error': 'First and last name are required'}), 400
+            
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Update query
+        cursor.execute("""
+            UPDATE users 
+            SET first_name = %s,
+                last_name = %s,
+                phone = %s,
+                address = %s
+            WHERE user_id = %s
+            RETURNING *  # Return updated record
+        """, (data['first_name'], data['last_name'], 
+             data.get('phone'), data.get('address'), 
+             user_id))
+        
+        updated_user = cursor.fetchone()
+        conn.commit()
+        
+        if not updated_user:
+            return jsonify({'error': 'User not found'}), 404
+            
+        # Convert to dict with column names
+        columns = [col[0] for col in cursor.description]
+        user_dict = dict(zip(columns, updated_user))
+        
+        return jsonify(user_dict)
+        
+    except Exception as e:
+        print(f"Update error: {str(e)}")
+        return jsonify({'error': 'Server error'}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5003)
