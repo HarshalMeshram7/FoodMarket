@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import pymysql
 from flask_cors import CORS
 from flasgger import Swagger
@@ -111,7 +111,7 @@ def get_products_by_category(category_id):
         return jsonify({'error': str(e)}), 500
 
 
-@app.route('/api/getuser', methods=['GET'])
+@app.route('/api/get-user-details', methods=['GET'])
 def get_user():
     """
     Get user information
@@ -127,11 +127,18 @@ def get_user():
         data = cursor.fetchall()
         cursor.close()
         conn.close()
-        return jsonify(data)
+        if not data:
+            return jsonify({'error': 'User not found'}), 404
+            
+        # Convert to dictionary with column names
+        columns = [col[0] for col in cursor.description]
+        return jsonify(dict(zip(columns, data)))
+    
     except Exception as e:
         print("❌ DB Error (users):", e)
         return jsonify({'error': str(e)}), 500
     
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5003)

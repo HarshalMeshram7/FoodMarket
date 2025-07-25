@@ -24,46 +24,168 @@ My Account
         
         <div class="col-md-9">
             <div class="card">
-                <div class="card-header">
-                    <h4>Personal Information</h4>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Personal Information</h4>
+                    <button id="editBtn" class="btn btn-outline-primary">Edit Profile</button>
                 </div>
                 <div class="card-body">
-                    <form id="accountForm" method="POST" action="{{ url_for('my_account') }}">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <label for="firstName" class="form-label">First Name</label>
-                                <input type="text" class="form-control" id="firstName" name="first_name" 
-                                       value="{{ current_user.first_name if current_user else '' }}" required>
+                    <form id="accountForm">
+                        <!-- Name Block -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Basic Information</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="view-mode">
+                                        <p class="text-muted mb-1">First Name</p>
+                                        <p id="firstNameView" class="fs-5"></p>
+                                    </div>
+                                    <div class="edit-mode d-none">
+                                        <label for="firstName" class="form-label">First Name</label>
+                                        <input type="text" class="form-control" id="firstName" name="first_name" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="view-mode">
+                                        <p class="text-muted mb-1">Last Name</p>
+                                        <p id="lastNameView" class="fs-5"></p>
+                                    </div>
+                                    <div class="edit-mode d-none">
+                                        <label for="lastName" class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" id="lastName" name="last_name" required>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="col-md-6">
-                                <label for="lastName" class="form-label">Last Name</label>
-                                <input type="text" class="form-control" id="lastName" name="last_name" 
-                                       value="{{ current_user.last_name if current_user else '' }}" required>
+                        </div>
+                        
+                        <!-- Contact Block -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Contact Information</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="view-mode">
+                                        <p class="text-muted mb-1">Email</p>
+                                        <p id="emailView" class="fs-5"></p>
+                                    </div>
+                                    <div class="edit-mode d-none">
+                                        <label for="email" class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="email" name="email" readonly>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="view-mode">
+                                        <p class="text-muted mb-1">Phone</p>
+                                        <p id="phoneView" class="fs-5"></p>
+                                    </div>
+                                    <div class="edit-mode d-none">
+                                        <label for="phone" class="form-label">Phone</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email Address</label>
-                            <input type="email" class="form-control" id="email" name="email" 
-                                   value="{{ current_user.email if current_user else '' }}" required readonly>
+                        <!-- Address Block -->
+                        <div class="mb-4">
+                            <h6 class="text-muted mb-3">Address</h6>
+                            <div class="view-mode">
+                                <p id="addressView" class="fs-5"></p>
+                            </div>
+                            <div class="edit-mode d-none">
+                                <label for="address" class="form-label">Address</label>
+                                <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                            </div>
                         </div>
                         
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" 
-                                   value="{{ current_user.phone if current_user else '' }}">
+                        <!-- Form Actions (Edit Mode Only) -->
+                        <div class="edit-mode d-none mt-4">
+                            <button type="submit" class="btn btn-primary me-2">Save Changes</button>
+                            <button type="button" id="cancelBtn" class="btn btn-outline-secondary">Cancel</button>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="address" class="form-label">Address</label>
-                            <textarea class="form-control" id="address" name="address" rows="3">{{ current_user.address if current_user else '' }}</textarea>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary">Update Information</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // DOM Elements
+    const editBtn = document.getElementById('editBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const accountForm = document.getElementById('accountForm');
+    const viewModes = document.querySelectorAll('.view-mode');
+    const editModes = document.querySelectorAll('.edit-mode');
+    
+    // Current user data cache
+    let userData = {};
+    
+    // Toggle between view and edit modes
+    function toggleEditMode(enableEdit) {
+        viewModes.forEach(el => el.classList.toggle('d-none', enableEdit));
+        editModes.forEach(el => el.classList.toggle('d-none', !enableEdit));
+        editBtn.classList.toggle('d-none', enableEdit);
+        
+        if (enableEdit) {
+            // Populate edit fields when entering edit mode
+            document.getElementById('firstName').value = userData.first_name || '';
+            document.getElementById('lastName').value = userData.last_name || '';
+            document.getElementById('email').value = userData.email || '';
+            document.getElementById('phone').value = userData.phone || '';
+            document.getElementById('address').value = userData.address || '';
+        }
+    }
+    
+    // Fetch user data
+    fetch('http://localhost:5003/api/get-user-details', {
+        headers: {
+            'Content-Type': 'application/json',
+            // Add authorization header if needed:
+            // 'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.json();
+    })
+    .then(data => {
+        if (data.error) throw new Error(data.error);
+        
+        // Store user data
+        userData = data;
+        
+        // Populate view blocks
+        document.getElementById('firstNameView').textContent = data.first_name || 'Not provided';
+        document.getElementById('lastNameView').textContent = data.last_name || 'Not provided';
+        document.getElementById('emailView').textContent = data.email || 'Not provided';
+        document.getElementById('phoneView').textContent = data.phone || 'Not provided';
+        document.getElementById('addressView').textContent = data.address || 'Not provided';
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to load user data');
+    });
+    
+    // Event Listeners
+    editBtn.addEventListener('click', () => toggleEditMode(true));
+    cancelBtn.addEventListener('click', () => toggleEditMode(false));
+    
+    accountForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Here you would add the update API call
+        alert('Update functionality will be implemented next');
+        // toggleEditMode(false); // Switch back to view mode after save
+    });
+});
+</script>
+
+<style>
+.view-mode p.fs-5 {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+</style>
 {% endblock %}
