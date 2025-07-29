@@ -1,44 +1,34 @@
 from flask import Blueprint, jsonify, request
 from flask_login import login_required, current_user
 from db import get_db_connection
-from werkzeug.security import check_password_hash
-import jwt  # Install with: pip install pyjwt
+from werkzeug.security import check_password_hash, generate_password_hash
+import psycopg2
 from datetime import datetime, timedelta
 import os
 from functools import wraps
 
 routes = Blueprint('routes', __name__)
 
-# JWT decorator for API authentication
-def jwt_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        token = request.headers.get('Authorization')
-        if not token:
-            return jsonify({'error': 'Token is missing'}), 401
-        
-        try:
-            # Remove 'Bearer ' prefix if present
-            if token.startswith('Bearer '):
-                token = token[7:]
-            
-            # Decode the token
-            data = jwt.decode(token, os.getenv('SECRET_KEY', 'your-secret-key-here'), algorithms=['HS256'])
-            current_user_id = data['user_id']
-            
-            # Store user_id in request context
-            request.current_user_id = current_user_id
-            
-        except jwt.ExpiredSignatureError:
-            return jsonify({'error': 'Token has expired'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'error': 'Token is invalid'}), 401
-        
-        return f(*args, **kwargs)
-    return decorated_function
-
 @routes.route('/api/categories', methods=['GET'])
 def get_categories():
+    """
+    Get all product categories
+    ---
+    tags:
+      - Products
+    responses:
+      200:
+        description: A list of product categories
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -53,6 +43,28 @@ def get_categories():
 
 @routes.route('/api/randomproducts', methods=['GET'])
 def get_random_products():
+    """
+    Get 5 random products
+    ---
+    tags:
+      - Products
+    responses:
+      200:
+        description: A list of 5 random products
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              price:
+                type: number
+              category_id:
+                type: integer
+    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -67,6 +79,34 @@ def get_random_products():
 
 @routes.route('/api/products/by-category/<int:category_id>', methods=['GET'])
 def get_products_by_category(category_id):
+    """
+    Get products by category ID
+    ---
+    tags:
+      - Products
+    parameters:
+      - name: category_id
+        in: path
+        type: integer
+        required: true
+        description: ID of the product category
+    responses:
+      200:
+        description: List of products in the specified category
+        schema:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              price:
+                type: number
+              category_id:
+                type: integer
+    """
     try:
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -87,10 +127,37 @@ def get_products_by_category(category_id):
         return jsonify({'error': str(e)}), 500
 
 @routes.route('/api/get-user-details', methods=['GET'])
-@jwt_required
 def get_user():
+    """
+    Get user details by user ID
+    ---
+    tags:
+      - User
+    parameters:
+      - name: user_id
+        in: query
+        type: integer
+        required: true
+        description: ID of the user
+    responses:
+      200:
+        description: User details
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            first_name:
+              type: string
+            last_name:
+              type: string
+            email:
+              type: string
+            phone:
+              type: string
+    """
     try:
-        user_id = request.current_user_id
+        user_id = request.args.get('user_id', type=int)
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT user_id, username, email, first_name, last_name, phone, address FROM users WHERE user_id = %s", (user_id,))
@@ -107,8 +174,36 @@ def get_user():
         return jsonify({'error': str(e)}), 500
 
 @routes.route('/api/update-user-details', methods=['PUT'])
-@jwt_required
 def update_user_details():
+    """
+    Update user details
+    ---
+    tags:
+      - User
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            id:
+              type: integer
+            first_name:
+              type: string
+            last_name:
+              type: string
+            phone:
+              type: string
+    responses:
+      200:
+        description: User details updated successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+    """
     try:
         data = request.get_json()
         user_id = request.current_user_id
@@ -192,3 +287,100 @@ def login():
             cursor.close()
         if 'conn' in locals():
             conn.close()
+
+
+@routes.route('/api/register', methods=['POST'])
+def register_user():
+    """
+    Register a new user
+    ---
+    tags:
+      - Authentication
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - username
+            - email
+            - password
+          properties:
+            username:
+              type: string
+            email:
+              type: string
+            password:
+              type: string
+            first_name:
+              type: string
+            last_name:
+              type: string
+            phone:
+              type: string
+            address:
+              type: string
+    responses:
+      200:
+        description: User registered successfully
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      400:
+        description: Invalid input or user already exists
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+    """
+    try:
+        data = request.get_json()
+
+        required_fields = ['username','first_name', 'last_name', 'email', 'password']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        username = data['username']
+        email = data['email']
+        password = generate_password_hash(data['password'])  # hash password
+        first_name = data.get('first_name')
+        last_name = data.get('last_name')
+        phone = data.get('phone')
+        address = data.get('address')
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Check if user already exists
+        cursor.execute("SELECT * FROM users WHERE email = %s OR username = %s", (email, username))
+        existing_user = cursor.fetchone()
+
+        if existing_user:
+            cursor.close()
+            conn.close()
+            return jsonify({'error': 'User already exists'}), 400
+
+        cursor.execute("""
+            INSERT INTO users (username, email, password_hash, first_name, last_name, phone, address, created_at)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+        """, (username, email, password, first_name, last_name, phone, address))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return jsonify({'message': 'User registered successfully'}), 200
+
+    except Exception as e:
+        print("❌ Error during registration:", e)
+        return jsonify({'error': str(e)}), 500
+
+
+
+
