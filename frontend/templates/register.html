@@ -115,13 +115,11 @@ document.addEventListener('DOMContentLoaded', function() {
             this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
         });
     });
-    
-    // Form validation
+
     const form = document.getElementById('registerForm');
     const password = document.getElementById('password');
     const confirmPassword = document.getElementById('confirmPassword');
-    
-    // Password matching validation
+
     function validatePasswords() {
         if (password.value !== confirmPassword.value) {
             confirmPassword.setCustomValidity("Passwords don't match");
@@ -129,11 +127,10 @@ document.addEventListener('DOMContentLoaded', function() {
             confirmPassword.setCustomValidity('');
         }
     }
-    
+
     password.addEventListener('change', validatePasswords);
     confirmPassword.addEventListener('keyup', validatePasswords);
-    
-    // Password length validation
+
     password.addEventListener('input', function() {
         if (this.value.length < 6) {
             this.setCustomValidity('Password must be at least 6 characters long');
@@ -141,16 +138,44 @@ document.addEventListener('DOMContentLoaded', function() {
             this.setCustomValidity('');
         }
     });
-    
-    form.addEventListener('submit', function(e) {
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
         if (!form.checkValidity()) {
-            e.preventDefault();
-            e.stopPropagation();
+            form.classList.add('was-validated');
+            return;
         }
-        form.classList.add('was-validated');
+
+        const formData = new FormData(form);
+        const jsonData = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch("http://localhost:5003/api/register", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                alert('✅ Account created successfully!');
+                window.location.href = "/";
+            } else {
+                alert('❌ ' + (result.error || 'Registration failed.'));
+            }
+        } catch (err) {
+            console.error('Registration error:', err);
+            alert('❌ Server error.');
+        }
     });
 });
 </script>
+
 
 <style>
 .toggle-password {

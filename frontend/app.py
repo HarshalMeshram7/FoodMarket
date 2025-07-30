@@ -12,7 +12,6 @@ from datetime import datetime
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', 'your-secret-key-here')  # Add this to your .env file
 
 # Initialize Flask-Login
 login_manager = LoginManager()
