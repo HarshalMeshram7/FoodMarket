@@ -63,41 +63,7 @@ def my_account():
 @app.route('/login', methods=['GET', 'POST'])
 def login_page():
     if current_user.is_authenticated:
-        return redirect(url_for('my_account'))
-    
-    if request.method == 'POST':
-        # Handle login form submission
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        # Make API call to your backend
-        try:
-            response = requests.post('http://localhost:5003/api/login', 
-                json={'email': email, 'password': password})
-            
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Store user data in session
-                session['user_data'] = {
-                    'user_id': data['user_id'],
-                    'first_name': data['first_name'],
-                    'email': email
-                }
-                session['auth_token'] = data['token']
-                
-                # Create user object and login
-                user = User(data['user_id'], '', email, data['first_name'], '')
-                login_user(user)
-                
-                return redirect(url_for('my_account'))
-            else:
-                error = response.json().get('message', 'Login failed')
-                return render_template('login.html', error=error)
-                
-        except requests.exceptions.RequestException as e:
-            return render_template('login.html', error='Unable to connect to server')
-    
+        return redirect(url_for('home_page'))
     return render_template('login.html')
 
 @app.route('/logout')

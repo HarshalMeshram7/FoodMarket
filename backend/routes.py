@@ -243,50 +243,76 @@ def update_user_details():
             conn.close()
 
 @routes.route('/api/login', methods=['POST'])
-def login():
+def login_user():
+    """
+    Login user with email and password
+    ---
+    tags:
+      - Auth
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          type: object
+          properties:
+            email:
+              type: string
+              example: user@example.com
+            password:
+              type: string
+              example: yourpassword
+    responses:
+      200:
+        description: Successfully logged in
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+            user:
+              type: object
+              properties:
+                user_id:
+                  type: integer
+                username:
+                  type: string
+                email:
+                  type: string
+        401:
+          description: Invalid credentials
+    """
     try:
         data = request.get_json()
         email = data.get('email')
         password = data.get('password')
-        
-        # Validate input
+
         if not email or not password:
-            return jsonify({'message': 'Email and password are required'}), 400
-            
+            return jsonify({'error': 'Email and password are required'}), 400
+
         conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # Check if user exists
         cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
         user = cursor.fetchone()
-        
-        if not user:
-            return jsonify({'message': 'Invalid credentials'}), 401
-            
-        # Verify password
-        if not check_password_hash(user['password'], password):
-            return jsonify({'message': 'Invalid credentials'}), 401
-            
-        # Create JWT token
-        token = jwt.encode({
-            'user_id': user['user_id'],
-            'exp': datetime.utcnow() + timedelta(days=7)
-        }, os.getenv('SECRET_KEY', 'your-secret-key-here'), algorithm='HS256')
-        
-        return jsonify({
-            'token': token,
-            'user_id': user['user_id'],
-            'first_name': user['first_name']
-        })
-        
+        cursor.close()
+        conn.close()
+
+        if user and check_password_hash(user['password_hash'], password):
+            return jsonify({
+                'message': 'Login successful',
+                'token': 'dummy-token-123',  # Replace with real token or session ID
+                'user_id': user['user_id'],
+                'username': user['username'],
+                'email': user['email'],
+                'first_name': user['first_name']  # Add these if needed on frontend
+            }), 200
+
+        else:
+            return jsonify({'error': 'Invalid email or password'}), 401
+
     except Exception as e:
-        print(f"Login error: {str(e)}")
-        return jsonify({'message': 'Server error'}), 500
-    finally:
-        if 'cursor' in locals():
-            cursor.close()
-        if 'conn' in locals():
-            conn.close()
+        print("❌ Login error:", e)
+        return jsonify({'error': 'Internal server error'}), 500
 
 
 @routes.route('/api/register', methods=['POST'])
