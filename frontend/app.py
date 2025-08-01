@@ -13,6 +13,7 @@ load_dotenv()
 
 app = Flask(__name__)
 
+app.secret_key = '4a22d2d808449ce70bd8b106400b8e4f'
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -27,6 +28,9 @@ class User(UserMixin):
         self.email = email
         self.first_name = first_name
         self.last_name = last_name
+    
+    def get_id(self):
+        return str(self.id)  # Ensure this returns a string
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -64,13 +68,48 @@ def my_account():
 def login_page():
     if current_user.is_authenticated:
         return redirect(url_for('home_page'))
+
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        # Authenticate via your API
+        auth_response = requests.post(
+            'http://localhost:5003/api/login',
+            json={'email': email, 'password': password}
+        )
+
+        if auth_response.status_code == 200:
+            auth_data = auth_response.json()
+            
+            # Set up Flask-Login session
+            user = User(
+                auth_data['user_id'],
+                auth_data['username'],
+                auth_data['email'],
+                auth_data.get('first_name', ''),
+                auth_data.get('last_name', '')
+            )
+            login_user(user)
+            
+            # Sync session data
+            session['user_data'] = {
+                'user_id': auth_data['user_id'],
+                'username': auth_data['username'],
+                'email': auth_data['email']
+            }
+            return redirect(url_for('home_page'))
+        
+        return render_template('login.html', error="Invalid credentials")
+    
     return render_template('login.html')
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
-    session.clear()
+    session.pop('auth_token', None)
+    session.pop('user_data', None)
     return redirect(url_for('home_page'))
 
 @app.route('/register')

@@ -10,6 +10,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="format-detection" content="telephone=no">
+  
 
   <!-- CSS Links -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css">
@@ -161,12 +162,16 @@
                 <svg width="24" height="24"><use xlink:href="#user"></use></svg>
               </a>
               <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                <li><a class="dropdown-item text-dark" href="{{ url_for('my_account') }}">My Account</a></li>
-                <li><a class="dropdown-item text-dark" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">My Cart</a></li>
-                <li><a class="dropdown-item text-dark" href="#">My Orders</a></li>
-                <li><a class="dropdown-item text-dark" href="#">Contact Us</a></li>
-                <li><hr class="dropdown-divider text-dark"></li>
-                <li><a class="dropdown-item text-dark" href="#">Logout</a></li>
+                {% if current_user.is_authenticated %}
+                  <li><a class="dropdown-item text-dark" href="{{ url_for('my_account') }}">My Account</a></li>
+                  <li><a class="dropdown-item text-dark" href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvasCart">My Cart</a></li>
+                  <li><a class="dropdown-item text-dark" href="#">My Orders</a></li>
+                  <li><a class="dropdown-item text-dark" href="#">Contact Us</a></li>
+                  <li><hr class="dropdown-divider text-dark"></li>
+                  <li><a class="dropdown-item text-dark" href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                  <li><a class="dropdown-item text-dark" href="{{ url_for('login_page') }}">Login</a></li>
+                {% endif %}
               </ul>
             </li>
             <li>
